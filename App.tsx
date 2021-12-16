@@ -6,7 +6,7 @@ import {
   View,
 } from 'react-native';
 
-import { HomePageComponent } from './src/pages/home';
+import { HomePageComponent } from './src/pages/home/home';
 
 const App = () => {
   return (

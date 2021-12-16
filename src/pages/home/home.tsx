@@ -1,20 +1,24 @@
 import React, {useState}from "react";
-import { Text, Button, Alert, FlatList, View } from 'react-native';
-import { CatSchema, Cat } from "../model/CatSchema";
+import { Text, Button } from 'react-native';
+import { CatSchema, Cat } from "../../model/CatSchema";
 import Realm from "realm";
-import { isNonNullExpression } from "typescript";
+import { CatListComponent } from "./components/CatsList";
+
+
 function buildArray<T>(results : Realm.Results<T>) : Array<T>{
+    console.log("build attempt");
     var a : Array<T> = new Array();
     var r : T = results[0];
     results.map(r => a.push(r));
+    console.log(a===null);
     return a;
-
 }
 
 export const HomePageComponent: React.FC = () => {
     enum Selected {NONE,INSERT,LIST,DELETE}
-    type StateType = {sel:Selected,i:number,content:Array<Cat>|null}
-    const initialState = {sel:Selected.NONE,i:0,content:null};
+    type StateType = {sel:Selected,i:number,content:Array<Cat>}
+    const emptyCatArray = new Array<Cat>();
+    const initialState = {sel:Selected.NONE,i:0,content:emptyCatArray};
     const [state,setState] = useState<StateType>(initialState);
     const realmPromise = Realm.open({
         path: "myrealm",
@@ -44,7 +48,7 @@ export const HomePageComponent: React.FC = () => {
     async function handleDelete() : Promise<void>{
         const realm = await realmPromise;
         realm.write( () => {realm.deleteAll();} );
-        const newState : StateType = {sel:Selected.DELETE,i:state.i,content:state.content};
+        const newState : StateType = {sel:Selected.DELETE,i:0,content:emptyCatArray};
         setState(newState);
         console.log("LOG: You pressed the DELETE BUTTON. stateselected="+state.sel);
     }
@@ -56,8 +60,7 @@ export const HomePageComponent: React.FC = () => {
         {state.sel===Selected.NONE && <Text>NULLA DA VEDERE</Text>}
         {state.sel===Selected.INSERT && <Text>INSERIMENTO</Text>}
         {state.sel===Selected.DELETE && <Text>CANCELLATO</Text>}
-        {state.sel===Selected.LIST && <Text>{(state.content as Array<Cat>).map(cat => cat.name).toString()}</Text>
-        }
+        {state.sel===Selected.LIST && <CatListComponent props={state.content}/>}
         </>
     );
 }
